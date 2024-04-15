@@ -31,11 +31,11 @@ This list will contain bugs which may or may not be fixed.
 
 ## Screenshots
 
-| |
+| ![ezgif-2-5036ee6527](https://github.com/Lyall/FISTFix/assets/695941/18dc4094-56f6-4b13-84ac-2d044ecf112d) |
 |:--:|
 | Gameplay |
 
-| |
+|![ezgif-5-870a5852f0](https://github.com/Lyall/FISTFix/assets/695941/7b3a6a12-cac0-4a37-ab63-81aab8739734) |
 |:--:|
 | Cutscene |
 

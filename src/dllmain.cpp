@@ -21,7 +21,6 @@ filesystem::path sThisModulePath;
 std::pair DesktopDimensions = { 0,0 };
 
 // Ini Variables
-int iInjectionDelay;
 bool bCustomResolution;
 int iCustomResX;
 int iCustomResY;
@@ -114,7 +113,6 @@ void ReadConfig()
     }
 
     // Read ini file
-    inipp::get_value(ini.sections["FISTFix Parameters"], "InjectionDelay", iInjectionDelay);
     inipp::get_value(ini.sections["Custom Resolution"], "Enabled", bCustomResolution);
     inipp::get_value(ini.sections["Custom Resolution"], "Width", iCustomResX);
     inipp::get_value(ini.sections["Custom Resolution"], "Height", iCustomResY);
@@ -126,7 +124,6 @@ void ReadConfig()
     inipp::get_value(ini.sections["DLSS Quality"], "QualityLevel", iDLSSQualitySetting);
 
     // Log config parse
-    spdlog::info("Config Parse: iInjectionDelay: {}ms", iInjectionDelay);
     spdlog::info("Config Parse: bCustomResolution: {}", bCustomResolution);
     spdlog::info("Config Parse: iCustomResX: {}", iCustomResX);
     spdlog::info("Config Parse: iCustomResY: {}", iCustomResY);
@@ -158,6 +155,30 @@ void ReadConfig()
         iCustomResY = (int)DesktopDimensions.second;
         spdlog::info("Custom Resolution: Desktop Width: {}", iCustomResX);
         spdlog::info("Custom Resolution: Desktop Height: {}", iCustomResY);
+    }
+}
+
+void IntroSkip()
+{
+    // Skip waiting for intro videos to finish
+    uint8_t* SkipIntroWaitScanResult = Memory::PatternScan(baseModule, "44 38 7D 67 4C 8D 4D C7");
+    if (SkipIntroWaitScanResult)
+    {
+        spdlog::info("Intro Skip: Address is {:s}+{:x}", sExeName.c_str(), (uintptr_t)SkipIntroWaitScanResult - (uintptr_t)baseModule);
+
+        static SafetyHookMid SkipIntroWaitMidHook{};
+        SkipIntroWaitMidHook = safetyhook::create_mid(SkipIntroWaitScanResult,
+            [](SafetyHookContext& ctx)
+            {
+                if (ctx.rbp + 0x67)
+                {
+                    *reinterpret_cast<int*>(ctx.rbp + 0x67) = (int)0;
+                }
+            });
+    }
+    else if (!SkipIntroWaitScanResult)
+    {
+        spdlog::error("Intro Skip: Pattern scan failed.");
     }
 }
 
@@ -371,7 +392,7 @@ DWORD __stdcall Main(void*)
 {
     Logging();
     ReadConfig();
-    Sleep(iInjectionDelay);
+    IntroSkip();
     Resolution();
     AspectFOV();
     DLSS();

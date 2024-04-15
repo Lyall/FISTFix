@@ -1,6 +1,6 @@
 # FIST: Forged In Shadow Torch Fix
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W01UAI9)<br />
-<a href="https://www.patreon.com/bePatron?u=93005037" data-patreon-widget-type="become-patron-button">Become a member!</a><script async src="https://c6.patreon.com/becomePatronButton.bundle.js"></script><br />
+ <iframe src="https://yikuansun.github.io/patreonbutton/widget.html?username=wintermance" height="68" width="298" scrolling="no" data-theme="light" style="border: 0; border-radius: 10px; overflow: hidden"></iframe><br/>
 [![Github All Releases](https://img.shields.io/github/downloads/Lyall/FISTFix/total.svg)](https://github.com/Lyall/FISTFix/releases)
 
 This is a fix that adds custom resolutions, ultrawide support and more to FIST: Forged In Shadow Torch.<br />

@@ -299,7 +299,7 @@ void AspectFOV()
         {
             spdlog::info("FOV: Address is {:s}+{:x}", sExeName.c_str(), (uintptr_t)FOVScanResult - (uintptr_t)baseModule);
             spdlog::info("Gameplay FOV: Address is {:s}+{:x}", sExeName.c_str(), (uintptr_t)GameplayFOVScanResult - (uintptr_t)baseModule);
-
+           
             static SafetyHookMid FOVMidHook{};
             FOVMidHook = safetyhook::create_mid(FOVScanResult + 0x1C,
                 [](SafetyHookContext& ctx)
@@ -312,14 +312,17 @@ void AspectFOV()
 
             // ZingangCameraVolume
             static SafetyHookMid GameplayFOVMidHook{};
-            GameplayFOVMidHook = safetyhook::create_mid(GameplayFOVScanResult,
+            GameplayFOVMidHook = safetyhook::create_mid(GameplayFOVScanResult + 0x6,
                 [](SafetyHookContext& ctx)
                 {
-                    if (fAspectRatio > fNativeAspect)
+                    if (ctx.rax + 0x28)
                     {
-                        ctx.xmm8.f32[0] = atanf(tanf(ctx.xmm8.f32[0] * (fPi / 360)) / fNativeAspect * fAspectRatio) * (360 / fPi);
+                        if (fAspectRatio > fNativeAspect)
+                        {
+                            *reinterpret_cast<float*>(ctx.rax + 0x28) = atanf(tanf(ctx.xmm8.f32[0] * (fPi / 360)) / fNativeAspect * fAspectRatio) * (360 / fPi);
+                        }
+                        *reinterpret_cast<float*>(ctx.rax + 0x28) += fAdditionalFOV;
                     }
-                    ctx.xmm8.f32[0] += fAdditionalFOV;
                 });
         }
         else if (!FOVScanResult || !GameplayFOVScanResult)

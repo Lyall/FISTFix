@@ -386,6 +386,11 @@ void HUD()
                         ctx.xmm0.f32[0] = ctx.xmm1.f32[0] * fNativeAspect;
                         ctx.xmm8.f32[0] = fHUDWidthOffset;
                     }
+                    else if (fAspectRatio < fNativeAspect)
+                    {
+                        ctx.xmm1.f32[0] = ctx.xmm0.f32[0] / fNativeAspect;
+                        ctx.xmm9.f32[0] = fHUDHeightOffset;
+                    }
                 });
         }
         else if (!HUDSizeScanResult)

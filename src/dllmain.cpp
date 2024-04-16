@@ -35,6 +35,8 @@ int iDLSSQualitySetting;
 // Aspect ratio + HUD stuff
 float fPi = (float)3.141592653;
 float fNativeAspect = (float)16 / 9;
+float fNativeWidth;
+float fNativeHeight;
 float fAspectRatio;
 float fAspectMultiplier;
 float fHUDWidth;
@@ -235,6 +237,8 @@ void Resolution()
 
                 fAspectRatio = (float)iResX / iResY;
                 fAspectMultiplier = fAspectRatio / fNativeAspect;
+                fNativeWidth = (float)iResY * fNativeAspect;
+                fNativeHeight = (float)iResX / fNativeAspect;
 
                 // HUD variables
                 fHUDWidth = (float)iResY * fNativeAspect;
@@ -254,6 +258,8 @@ void Resolution()
                 spdlog::info("Resolution: Resolution: {}x{}", iResX, iResY);
                 spdlog::info("Resolution: fAspectRatio: {}", fAspectRatio);
                 spdlog::info("Resolution: fAspectMultiplier: {}", fAspectMultiplier);
+                spdlog::info("Resolution: fNativeWidth: {}", fNativeWidth);
+                spdlog::info("Resolution: fNativeHeight: {}", fNativeHeight);
                 spdlog::info("Resolution: fHUDWidth: {}", fHUDWidth);
                 spdlog::info("Resolution: fHUDHeight: {}", fHUDHeight);
                 spdlog::info("Resolution: fHUDWidthOffset: {}", fHUDWidthOffset);
@@ -295,7 +301,8 @@ void AspectFOV()
         // FOV
         uint8_t* FOVScanResult = Memory::PatternScan(baseModule, "74 ?? F3 0F ?? ?? ?? ?? ?? 00 F3 0F ?? ?? ?? ?? ?? 00 EB ?? F3 0F ?? ?? ?? ?? ?? 00 F3 0F ?? ?? ?? 8B ?? ?? ?? ?? 00");
         uint8_t* GameplayFOVScanResult = Memory::PatternScan(baseModule, "F3 ?? ?? ?? ?? ?? 44 0F ?? ?? ?? ?? ?? 00 75 ?? 48 8D ?? ?? ?? ?? ??");
-        if (FOVScanResult && GameplayFOVScanResult)
+        uint8_t* GameplayCameraHeightScanResult = Memory::PatternScan(baseModule, "0F 5B ?? F3 41 ?? ?? ?? F3 0F ?? ?? E8 ?? ?? ?? ?? 4C ?? ?? ??");
+        if (FOVScanResult && GameplayFOVScanResult && GameplayCameraHeightScanResult)
         {
             spdlog::info("FOV: Address is {:s}+{:x}", sExeName.c_str(), (uintptr_t)FOVScanResult - (uintptr_t)baseModule);
             spdlog::info("Gameplay FOV: Address is {:s}+{:x}", sExeName.c_str(), (uintptr_t)GameplayFOVScanResult - (uintptr_t)baseModule);
@@ -324,8 +331,19 @@ void AspectFOV()
                         *reinterpret_cast<float*>(ctx.rax + 0x28) += fAdditionalFOV;
                     }
                 });
+
+            static SafetyHookMid GameplayCameraHeightMidHook{};
+            GameplayCameraHeightMidHook = safetyhook::create_mid(GameplayCameraHeightScanResult + 0x3,
+                [](SafetyHookContext& ctx)
+                {
+                    if (fAspectRatio > fNativeAspect)
+                    {
+                        ctx.xmm0.f32[0] = fNativeHeight;
+                    }
+    
+                });
         }
-        else if (!FOVScanResult || !GameplayFOVScanResult)
+        else if (!FOVScanResult || !GameplayFOVScanResult || !GameplayCameraHeightScanResult)
         {
             spdlog::error("FOV: Pattern scan failed.");
         }

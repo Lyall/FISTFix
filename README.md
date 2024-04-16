@@ -8,8 +8,10 @@ This is a fix that adds custom resolutions, ultrawide support and more to FIST: 
 - Custom resolution support that integrates with the game's menus.
 - Ultrawide/narrow aspect ratio support.
 - Correct FOV at any aspect ratio.
+- Option to constrain HUD to 16:9.
 - Option to increase gameplay FOV.
 - Ability to override DLSS "Auto" quality setting.
+- Intro skip.
 
 ## Installation
 - Grab the latest release of FISTFix from [here.](https://github.com/Lyall/FISTFix/releases)
@@ -27,7 +29,6 @@ Please report any issues you see.
 This list will contain bugs which may or may not be fixed.
 
 - At the moment, this is only tested on the Epic Games Store version. If you run in to any issues with your specific version, please create an issue.
-
 ## Screenshots
 
 | ![ezgif-2-5036ee6527](https://github.com/Lyall/FISTFix/assets/695941/18dc4094-56f6-4b13-84ac-2d044ecf112d) |

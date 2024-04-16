@@ -1,4 +1,5 @@
 # FIST: Forged In Shadow Torch Fix
+[![Patreon-Button](https://github.com/Lyall/FISTFix/assets/695941/032e12d5-b7ef-4332-a4cc-9fba8206dd8c)](https://www.patreon.com/Wintermance)<br />
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W01UAI9)<br />
 [![Github All Releases](https://img.shields.io/github/downloads/Lyall/FISTFix/total.svg)](https://github.com/Lyall/FISTFix/releases)
 

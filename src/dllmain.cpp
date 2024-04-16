@@ -27,6 +27,7 @@ int iCustomResY;
 bool bAspectFix;
 bool bFOVFix;
 float fAdditionalFOV;
+bool bSkipIntro;
 bool bDisableDLSSAutoQuality;
 bool bDLSSQualityOverride;
 int iDLSSQualitySetting;
@@ -119,6 +120,7 @@ void ReadConfig()
     inipp::get_value(ini.sections["Fix Aspect Ratio"], "Enabled", bAspectFix);
     inipp::get_value(ini.sections["Fix FOV"], "Enabled", bFOVFix);
     inipp::get_value(ini.sections["Fix FOV"], "AdditionalFOV", fAdditionalFOV);
+    inipp::get_value(ini.sections["Skip Intro"], "Enabled", bSkipIntro);
     inipp::get_value(ini.sections["DLSS Quality"], "DisableAutoQuality", bDisableDLSSAutoQuality);
     inipp::get_value(ini.sections["DLSS Quality"], "OverrideDLSSQuality", bDLSSQualityOverride);
     inipp::get_value(ini.sections["DLSS Quality"], "QualityLevel", iDLSSQualitySetting);
@@ -135,6 +137,7 @@ void ReadConfig()
         fAdditionalFOV = std::clamp(fAdditionalFOV, 0.0f, 180.0f);
         spdlog::info("Config Parse: fAdditionalFOV value invalid, clamped to {}", fAdditionalFOV);
     }
+    spdlog::info("Config Parse: bSkipIntro: {}", bSkipIntro);
     spdlog::info("Config Parse: bDisableDLSSAutoQuality: {}", bDisableDLSSAutoQuality);
     spdlog::info("Config Parse: bDLSSQualityOverride: {}", bDLSSQualityOverride);
     spdlog::info("Config Parse: iDLSSQualitySetting: {}", iDLSSQualitySetting);
@@ -161,20 +164,14 @@ void ReadConfig()
 void IntroSkip()
 {
     // Skip waiting for intro videos to finish
-    uint8_t* SkipIntroWaitScanResult = Memory::PatternScan(baseModule, "44 38 7D 67 4C 8D 4D C7");
+    uint8_t* SkipIntroWaitScanResult = Memory::PatternScan(baseModule, "0F ?? ?? ?? 4C ?? ?? ?? 48 89 ?? ?? ?? E8 ?? ?? ?? ?? 44 ?? ?? ?? 75 ??");
     if (SkipIntroWaitScanResult)
     {
         spdlog::info("Intro Skip: Address is {:s}+{:x}", sExeName.c_str(), (uintptr_t)SkipIntroWaitScanResult - (uintptr_t)baseModule);
 
-        static SafetyHookMid SkipIntroWaitMidHook{};
-        SkipIntroWaitMidHook = safetyhook::create_mid(SkipIntroWaitScanResult,
-            [](SafetyHookContext& ctx)
-            {
-                if (ctx.rbp + 0x67)
-                {
-                    *reinterpret_cast<int*>(ctx.rbp + 0x67) = (int)0;
-                }
-            });
+        // bWaitForMoviesToComplete
+        // sete byte ptr [rbp+2B] -> setne byte ptr [rbp+2B]
+        Memory::PatchBytes((uintptr_t)SkipIntroWaitScanResult + 0x1, "\x95", 1);
     }
     else if (!SkipIntroWaitScanResult)
     {

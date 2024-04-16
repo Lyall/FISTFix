@@ -27,6 +27,7 @@ int iCustomResY;
 bool bAspectFix;
 bool bFOVFix;
 float fAdditionalFOV;
+bool bHUDSize;
 bool bSkipIntro;
 bool bDisableDLSSAutoQuality;
 bool bDLSSQualityOverride;
@@ -122,6 +123,7 @@ void ReadConfig()
     inipp::get_value(ini.sections["Fix Aspect Ratio"], "Enabled", bAspectFix);
     inipp::get_value(ini.sections["Fix FOV"], "Enabled", bFOVFix);
     inipp::get_value(ini.sections["Fix FOV"], "AdditionalFOV", fAdditionalFOV);
+    inipp::get_value(ini.sections["HUD Size"], "Enabled", bHUDSize);
     inipp::get_value(ini.sections["Skip Intro"], "Enabled", bSkipIntro);
     inipp::get_value(ini.sections["DLSS Quality"], "DisableAutoQuality", bDisableDLSSAutoQuality);
     inipp::get_value(ini.sections["DLSS Quality"], "OverrideDLSSQuality", bDLSSQualityOverride);
@@ -139,6 +141,7 @@ void ReadConfig()
         fAdditionalFOV = std::clamp(fAdditionalFOV, 0.0f, 180.0f);
         spdlog::info("Config Parse: fAdditionalFOV value invalid, clamped to {}", fAdditionalFOV);
     }
+    spdlog::info("Config Parse: bHUDSize: {}", bHUDSize);
     spdlog::info("Config Parse: bSkipIntro: {}", bSkipIntro);
     spdlog::info("Config Parse: bDisableDLSSAutoQuality: {}", bDisableDLSSAutoQuality);
     spdlog::info("Config Parse: bDLSSQualityOverride: {}", bDLSSQualityOverride);
@@ -302,11 +305,14 @@ void AspectFOV()
         uint8_t* FOVScanResult = Memory::PatternScan(baseModule, "74 ?? F3 0F ?? ?? ?? ?? ?? 00 F3 0F ?? ?? ?? ?? ?? 00 EB ?? F3 0F ?? ?? ?? ?? ?? 00 F3 0F ?? ?? ?? 8B ?? ?? ?? ?? 00");
         uint8_t* GameplayFOVScanResult = Memory::PatternScan(baseModule, "F3 ?? ?? ?? ?? ?? 44 0F ?? ?? ?? ?? ?? 00 75 ?? 48 8D ?? ?? ?? ?? ??");
         uint8_t* GameplayCameraHeightScanResult = Memory::PatternScan(baseModule, "0F 5B ?? F3 41 ?? ?? ?? F3 0F ?? ?? E8 ?? ?? ?? ?? 4C ?? ?? ??");
-        if (FOVScanResult && GameplayFOVScanResult && GameplayCameraHeightScanResult)
+        uint8_t* GameplayCameraWidthScanResult = Memory::PatternScan(baseModule, "66 0F ?? ?? 0F 5B ?? F3 41 ?? ?? ?? E8 ?? ?? ?? ?? 80 ?? ?? ?? ?? ?? 00 F3 0F ?? ?? 74 ??");
+        if (FOVScanResult && GameplayFOVScanResult && GameplayCameraHeightScanResult && GameplayCameraWidthScanResult)
         {
             spdlog::info("FOV: Address is {:s}+{:x}", sExeName.c_str(), (uintptr_t)FOVScanResult - (uintptr_t)baseModule);
             spdlog::info("Gameplay FOV: Address is {:s}+{:x}", sExeName.c_str(), (uintptr_t)GameplayFOVScanResult - (uintptr_t)baseModule);
-           
+            spdlog::info("Gameplay Camera Height: Address is {:s}+{:x}", sExeName.c_str(), (uintptr_t)GameplayCameraHeightScanResult - (uintptr_t)baseModule);
+            spdlog::info("Gameplay Camera Width: Address is {:s}+{:x}", sExeName.c_str(), (uintptr_t)GameplayCameraWidthScanResult - (uintptr_t)baseModule);
+
             static SafetyHookMid FOVMidHook{};
             FOVMidHook = safetyhook::create_mid(FOVScanResult + 0x1C,
                 [](SafetyHookContext& ctx)
@@ -317,7 +323,7 @@ void AspectFOV()
                     }
                 });
 
-            // ZingangCameraVolume
+            // ZingangCameraVolume FOV
             static SafetyHookMid GameplayFOVMidHook{};
             GameplayFOVMidHook = safetyhook::create_mid(GameplayFOVScanResult + 0x6,
                 [](SafetyHookContext& ctx)
@@ -332,6 +338,7 @@ void AspectFOV()
                     }
                 });
 
+            // ZingangCameraVolume Camera Height
             static SafetyHookMid GameplayCameraHeightMidHook{};
             GameplayCameraHeightMidHook = safetyhook::create_mid(GameplayCameraHeightScanResult + 0x3,
                 [](SafetyHookContext& ctx)
@@ -340,13 +347,52 @@ void AspectFOV()
                     {
                         ctx.xmm0.f32[0] = fNativeHeight;
                     }
-    
+                });
+
+            // ZingangCameraVolume Camera Width
+            static SafetyHookMid GameplayCameraWidthMidHook{};
+            GameplayCameraWidthMidHook = safetyhook::create_mid(GameplayCameraWidthScanResult + 0x7,
+                [](SafetyHookContext& ctx)
+                {
+                    if (fAspectRatio < fNativeAspect)
+                    {
+                        ctx.xmm7.f32[0] = fNativeWidth;
+                    }
                 });
         }
-        else if (!FOVScanResult || !GameplayFOVScanResult || !GameplayCameraHeightScanResult)
+        else if (!FOVScanResult || !GameplayFOVScanResult || !GameplayCameraHeightScanResult || !GameplayCameraWidthScanResult)
         {
             spdlog::error("FOV: Pattern scan failed.");
         }
+    }
+}
+
+void HUD()
+{
+    if (bHUDSize)
+    {
+        // Constrain HUD to 16:9
+        uint8_t* HUDSizeScanResult = Memory::PatternScan(baseModule, "F3 41 ?? ?? ?? ?? F3 0F ?? ?? ?? ?? F3 0F ?? ?? ?? ?? F3 0F ?? ?? ?? ?? F3 44 ?? ?? ?? ?? ?? F3 44 ?? ?? ?? ?? ??") + 0x6;
+        if (HUDSizeScanResult)
+        {
+            spdlog::info("HUD Size: Address is {:s}+{:x}", sExeName.c_str(), (uintptr_t)HUDSizeScanResult - (uintptr_t)baseModule);
+
+            static SafetyHookMid HUDSizeMidHook{};
+            HUDSizeMidHook = safetyhook::create_mid(HUDSizeScanResult,
+                [](SafetyHookContext& ctx)
+                {
+                    if (fAspectRatio > fNativeAspect)
+                    {
+                        ctx.xmm0.f32[0] = ctx.xmm1.f32[0] * fNativeAspect;
+                        ctx.xmm8.f32[0] = fHUDWidthOffset;
+                    }
+                });
+        }
+        else if (!HUDSizeScanResult)
+        {
+            spdlog::error("HUD Size: Pattern scan failed.");
+        }
+
     }
 }
 
@@ -413,6 +459,7 @@ DWORD __stdcall Main(void*)
     IntroSkip();
     Resolution();
     AspectFOV();
+    HUD();
     DLSS();
     return true;
 }

@@ -3,6 +3,7 @@
 [![Github All Releases](https://img.shields.io/github/downloads/Lyall/FISTFix/total.svg)](https://github.com/Lyall/FISTFix/releases)
 
 This is a fix for FIST: Forged In Shadow Torch that adds custom resolutions, ultrawide support and more.<br />
+If you would like to see a technical breakdown on how this fix was made, you can check it out [on my Patreon](https://www.patreon.com/posts/fist-forged-in-102529496?utm_medium=clipboard_copy&utm_source=copyLink&utm_campaign=postshare_creator&utm_content=join_link).
 
 ## Features
 - Custom resolution support that integrates with the game's menus.

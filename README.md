@@ -17,7 +17,7 @@ If you would like to see a technical breakdown on how this fix was made, you can
 
 ## Installation
 - Grab the latest release of FISTFix from [here.](https://github.com/Lyall/FISTFix/releases)
-- Extract the contents of the release zip in to the the game's binary folder.<br />(e.g. "**steamapps\common\FISTGame**" for Steam).
+- Extract the contents of the release zip in to the the game folder.<br />(e.g. "**steamapps\common\FISTGame**" for Steam).
 
 ### Steam Deck/Linux Additional Instructions
 🚩**You do not need to do this if you are using Windows!**

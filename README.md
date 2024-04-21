@@ -1,8 +1,10 @@
 # FIST: Forged In Shadow Torch Fix
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W01UAI9)<br />
+[![Patreon-Button](https://github.com/Lyall/FISTFix/assets/695941/19c468ac-52af-4790-b4eb-5187c06af949)](https://www.patreon.com/Wintermance) [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W01UAI9)<br />
 [![Github All Releases](https://img.shields.io/github/downloads/Lyall/FISTFix/total.svg)](https://github.com/Lyall/FISTFix/releases)
 
 This is a fix for FIST: Forged In Shadow Torch that adds custom resolutions, ultrawide support and more.<br />
+
+If you would like to see a technical breakdown on how this fix was made, you can check it out [on my Patreon](https://www.patreon.com/posts/fist-forged-in-102529496?utm_medium=clipboard_copy&utm_source=copyLink&utm_campaign=postshare_creator&utm_content=join_link).
 
 ## Features
 - Custom resolution support that integrates with the game's menus.
@@ -15,7 +17,7 @@ This is a fix for FIST: Forged In Shadow Torch that adds custom resolutions, ult
 
 ## Installation
 - Grab the latest release of FISTFix from [here.](https://github.com/Lyall/FISTFix/releases)
-- Extract the contents of the release zip in to the the game's binary folder.<br />(e.g. "**steamapps\common\FISTGame**" for Steam).
+- Extract the contents of the release zip in to the the game folder.<br />(e.g. "**steamapps\common\FISTGame**" for Steam).
 
 ### Steam Deck/Linux Additional Instructions
 🚩**You do not need to do this if you are using Windows!**
